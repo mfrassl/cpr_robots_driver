@@ -33,7 +33,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 // Created on: 	Jan 12th, 2013
-// Last Update:	Jan 23st, 2013
+// Last Update:	June 31st, 2013
 
 
 
@@ -67,10 +67,13 @@ namespace cpr_robots{
 	//*************************************************************************************
 	CPRKinSlider::CPRKinSlider(){
 
-		jointID_[0] = 0x02;	// back left		// standard configuration for the slider, looking in forward-direction
-		jointID_[1] = 0x04;	// back right		// the front is where the CPR print is, the back is where the main switch is
-		jointID_[2] = 0x06;	// front left
-		jointID_[3] = 0x08;	// front right
+		// standard configuration for the slider, looking in forward-direction
+		// the front is where the CPR print is, the back is where the main switch is
+		jointIDs[0] = 8;		// front left							 
+		jointIDs[1] = 6;		// front right
+		jointIDs[2] = 2;		// back left
+		jointIDs[3] = 4;		// back right
+
 
 		length_ = 0.3;					// values for Slider 100 and 150
 		width_ = 0.270;
@@ -83,10 +86,8 @@ namespace cpr_robots{
 
 		double complete_rotation = width_ * 3.141;	// Rotational speed given in rad/s
 		scale_rotation_ = complete_rotation / (2.0 * 3.141) * scale_translation_;		
-		
 
 		flag_sending_ = false;
-
 	}
 
 
@@ -146,9 +147,10 @@ namespace cpr_robots{
 	int CPRKinSlider::resetPosition(){
 
 		int id = 2;
-		int len = 2;
+		int len = 4;
 		char data[8];
 		data[0] = 0x01;	data[1] = 0x08;		// Code for position reset
+		data[2] = 0x70; data[2] = 0x00;
 		int res = 0;
 		flag_sending_ = false;
 		for(int i=0; i<4; i++){
@@ -213,6 +215,14 @@ namespace cpr_robots{
 		if(!flag_sending_)
 			return 1;
 
+		// last check: the joint velocites are transferred as byte, when they are bigger then 127 direction will change!
+		// but this check will lead to ill motions, the velocity has to be limited before
+		for(int i=0; i<4; i++){
+			if(vel[i] > 127) vel[i] = 127;
+			if(vel[i] < -127) vel[i] = -127;
+		}
+
+
 		int id = 2;
 		int len = 3;
 		char data[8];
@@ -227,6 +237,7 @@ namespace cpr_robots{
 			v = 127.0 + vel[i];
 			if(v > 250.0) v = 250.0;
 			if(v < 7.0) v = 7.0;
+			//ROS_INFO("%lf", v);
 			data[1] = (char)((int)v); 
 			res = itf_.sendMsg(id, len, data);
 			ros::Duration(0.005).sleep();
@@ -285,29 +296,25 @@ namespace cpr_robots{
 	//**************************************************************************************
 	void CPRKinSlider::invKin(const geometry_msgs::Twist::ConstPtr& vel_cart, double *vel_joint){
 
-		
-		// naming:
-		// the front of the slider is the empty side, the back is the side with the main switch
-		// front left: vel[2] inverted		front right vel[3]	(looking from behind)		
-		// back left: vel[0] inverted		back left: vel[1]
+		// the motions add up		
 
 		// forward: all four wheels 
-		vel_joint[0] = -scale_translation_ * vel_cart->linear.x;
-		vel_joint[1] =  scale_translation_ * vel_cart->linear.x;
-		vel_joint[2] = -scale_translation_ * vel_cart->linear.x;
-		vel_joint[3] =  scale_translation_ * vel_cart->linear.x;
+		vel_joint[0] =  scale_translation_ * vel_cart->linear.x;
+		vel_joint[1] = -scale_translation_ * vel_cart->linear.x;
+		vel_joint[2] =  scale_translation_ * vel_cart->linear.x;
+		vel_joint[3] = -scale_translation_ * vel_cart->linear.x;
 
 		// traverse: 
-		vel_joint[0] +=  scale_translation_ * vel_cart->linear.y;
-		vel_joint[1] +=  scale_translation_ * vel_cart->linear.y;
-		vel_joint[2] += -scale_translation_ * vel_cart->linear.y;
-		vel_joint[3] += -scale_translation_ * vel_cart->linear.y;
+		vel_joint[0] += scale_translation_ * vel_cart->linear.y;
+		vel_joint[1] += scale_translation_ * vel_cart->linear.y;
+		vel_joint[2] -= scale_translation_ * vel_cart->linear.y;
+		vel_joint[3] -= scale_translation_ * vel_cart->linear.y;
 
 		// rotate: 
-		vel_joint[0] +=  scale_rotation_ * vel_cart->angular.z;
-		vel_joint[1] +=  scale_rotation_ * vel_cart->angular.z;
-		vel_joint[2] +=  scale_rotation_ * vel_cart->angular.z;
-		vel_joint[3] +=  scale_rotation_ * vel_cart->angular.z;
+		vel_joint[0] -= scale_rotation_ * vel_cart->angular.z;
+		vel_joint[1] -= scale_rotation_ * vel_cart->angular.z;
+		vel_joint[2] -= scale_rotation_ * vel_cart->angular.z;
+		vel_joint[3] -= scale_rotation_ * vel_cart->angular.z;
 
 		return;
 

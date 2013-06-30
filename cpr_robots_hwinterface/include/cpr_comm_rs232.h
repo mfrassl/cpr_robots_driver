@@ -121,7 +121,7 @@ class CPRCommRS232{
 		/*!
 	    	* \brief	Evaluates a 1 char test array to a msg structure
 		*/
-		int evaluateBuffer(char* buf);
+		int evaluateBuffer(unsigned char* buf);
 
 
 };

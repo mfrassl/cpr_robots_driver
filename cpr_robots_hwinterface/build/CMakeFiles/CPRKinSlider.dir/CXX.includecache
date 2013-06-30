@@ -46,10 +46,6 @@ geometry_msgs/Pose.h
 cpr_comm_rs232.h
 -
 
-/home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/src/cpr_comm_rs232.cpp
-cpr_comm_rs232.h
--
-
 /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/src/cpr_kin_slider.cpp
 cpr_kin_slider.h
 -
