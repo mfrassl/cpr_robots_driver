@@ -1,4 +1,4 @@
-Jan 21st, 2013
+July 1st, 2013
 christian.meyer@cpr-robots.com
 
 How to set up the ROS stack cpr_robots_driver

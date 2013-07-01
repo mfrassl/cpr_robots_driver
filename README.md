@@ -7,9 +7,14 @@ BSD license.
 
 Current Version
 -----------------
-July 1st, 2013	   - Debugging, limiting the cartesian acceleration
-June 31st, 2013    - Update, better CAN message check, aligning CAN ids, debugging 
-January 21st, 2013 - Set up
+* July 1st, 2013	   - Debugging, limiting the cartesian acceleration
+* June 31st, 2013    - Update, better CAN message check, aligning CAN ids, debugging 
+* January 21st, 2013 - Set up
+
+Usage
+-----------------
+roslaunch teleopSlider.launch in cpr_robots_teleop
+See the doc directory
 
 Scope
 -----------------
