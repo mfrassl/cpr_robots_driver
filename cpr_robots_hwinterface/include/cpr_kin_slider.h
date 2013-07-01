@@ -33,7 +33,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 // Created on: 	Jan 12th, 2013
-// Last Update:	Jan 21st, 2013
+// Last Update:	July 01st, 2013
 
 
 #ifndef cpr_robots_driver_kin_slider_H
@@ -81,6 +81,8 @@ class CPRKinSlider{
 		geometry_msgs::Twist cmd_twist_;		/**< the current twist command */
 		geometry_msgs::Pose pos_current_;		/**< the current position in world coordinates */
 
+		double acc;					/**< simple acceleration limiting in cartesian velocities*/
+
 	  	ros::NodeHandle n_;
 		ros::Subscriber sub_twist_slider_; 		/**< .. */
 		ros::Publisher odom_slider_pub;			/**< publishes the current position  */		
@@ -106,7 +108,7 @@ class CPRKinSlider{
 	    	* \brief	Computes the joint values of the mecanum wheels out of the cartesions x-y-rz velocites
 		*	x and y velocity in m/s, rz velocity in rad/s 
 		*/
-		void invKin(const geometry_msgs::Twist::ConstPtr& vel_cart, double vel_joint[]);
+		void invKin(geometry_msgs::Twist vel_cart, double vel_joint[]);
 
 
 		/*!

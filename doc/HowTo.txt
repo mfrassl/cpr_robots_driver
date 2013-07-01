@@ -11,7 +11,8 @@ https://github.com/CPR-Robots/cpr_robots_driver
 
 3. Start the teleoperation scenario:
 First get into the directory:	roscd cpr_robots_teleop
-Then start the launch file:	roslaunch teleop.launch
+Then start the launch file:	roslaunch teleopSlider.launch
+or				roslaunch teleopMover4.launch
 
 4. Drive the robot with the keys w/s, a/s and e/q
 

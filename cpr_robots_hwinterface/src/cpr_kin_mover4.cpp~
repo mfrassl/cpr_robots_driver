@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Commonplace Robotics GmbH
+ *  Copyright (c) 2013, Commonplace Robotics GmbH
  *  http://www.commonplacerobotics.com
  *  All rights reserved.
  *
@@ -32,22 +32,265 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
-// Created on: 	Jan 12th, 2013
-// Last Update:	
+// Created on: 	June 31st, 2013
 
 
-#include <cpr_teleop_keyboard.h>
+
+#include <cpr_kin_mover4.h>
+
+
+
+void quit(int sig)
+{
+  ros::shutdown();
+  exit(0);
+}
+
+int main(int argc, char** argv)
+{
+	ros::init(argc, argv, "CPR-Robots KinMover4");
+
+	cpr_robots::cpr_kin_mover4 hw;
+	hw.init();
+
+	ros::spin();
+  	signal(SIGINT,quit);	
+	return(0);
+}
+
+
 
 namespace cpr_robots{
 
-class CPRTeleopKeyboard{
 
-	CPRTeleopKeyboard::CPRTeleopKeyboard(){
+	//*************************************************************************************
+	cpr_kin_mover4::cpr_kin_mover4(){
+
+		// standard configuration for the slider, looking in forward-direction
+		// the front is where the CPR print is, the back is where the main switch is
+		jointID_[0] = 8;		// front left							 
+		jointID_[1] = 6;		// front right
+		jointID_[2] = 2;		// back left
+		jointID_[3] = 4;		// back right
+
+		
+		double max_vel = 123.0;				// velocity from -123 to 123 (one byte)
+
+		flag_sending_ = false;
+	}
+
+
+	//*************************************************************************************
+	cpr_kin_mover4::~cpr_kin_mover4(){
 
 	}
 
 
-}
+
+	//*************************************************************************************
+	int cpr_kin_mover4::init(){
+		
+		pos_current_.position.x = 0.0;
+		pos_current_.position.y = 0.0;
+		pos_current_.position.z = 0.0;
+
+		itf_.connect();
+
+		ros::Duration(1.0).sleep();
+		resetErrors();
+		ros::Duration(0.02).sleep();
+		enableMotors();
+		ros::Duration(0.02).sleep();
+
+		sub_pose_mover4_   = n_.subscribe<geometry_msgs::Pose>("/poseMover4", 1, &cpr_kin_mover4::poseCallback, this);
+		pub_joints_mover4_ = n_.advertise<geometry_msgs::Pose>("/jointsMover4", 1);
+
+		flag_sending_ = true;
+			
+		return 0;
+	}
+
+
+
+
+	//*************************************************************************************
+	int cpr_kin_mover4::resetErrors(){
+
+		int id = 2;
+		int len = 2;
+		char data[8];
+		data[0] = 0x01;	data[1] = 0x06;		// Code for error reset
+		int res = 0;
+		
+		flag_sending_ = false;
+		for(int i=0; i<4; i++){
+			id = jointID_[i];
+			res = itf_.sendMsg(id, len, data);
+			ros::Duration(0.01).sleep();
+		}	
+		flag_sending_ = true;
+		return res;	
+	}
+
+	//*************************************************************************************
+	int cpr_kin_mover4::resetPosition(){
+
+		int id = 2;
+		int len = 4;
+		char data[8];
+		data[0] = 0x01;	data[1] = 0x08;		// Code for position reset
+		data[2] = 0x70; data[2] = 0x00;
+		int res = 0;
+		flag_sending_ = false;
+		for(int i=0; i<4; i++){
+			id = jointID_[i];
+			res = itf_.sendMsg(id, len, data);
+			ros::Duration(0.01).sleep();
+		}	
+
+		pos_current_.position.x = 0.0;
+		pos_current_.position.y = 0.0;
+		pos_current_.orientation.z = 0.0;
+
+		flag_sending_ = true;
+
+		return res;	
+	}
+
+
+	
+	//*************************************************************************************
+	int cpr_kin_mover4::enableMotors(){
+		int id = 2;
+		int len = 2;
+		char data[8];
+		data[0] = 0x01;	data[1] = 0x09;		// Code for enable motors
+		int res = 0;
+		flag_sending_ = false;
+		for(int i=0; i<4; i++){
+			id = jointID_[i];
+			res = itf_.sendMsg(id, len, data);
+			ros::Duration(0.01).sleep();
+		}	
+		flag_sending_ = true;
+		return res;	
+	}
+
+
+	
+	//*************************************************************************************
+	int cpr_kin_mover4::disableMotors(){
+		int id = 2;
+		int len = 2;
+		char data[8];
+		data[0] = 0x01;	data[1] = 0x0A;		// Code for disable motors
+		int res = 0;
+		flag_sending_ = false;
+		for(int i=0; i<4; i++){
+			id = jointID_[i];
+			res = itf_.sendMsg(id, len, data);
+			ros::Duration(0.05).sleep();
+		}	
+		flag_sending_ = true;
+		return res;	
+	}
+		
+
+
+	//*************************************************************************************
+	int cpr_kin_mover4::setJointPositions(double * jointPos){
+
+		if(!flag_sending_)
+			return 1;
+
+		
+		int id = 2;
+		int len = 5;
+		char data[8];
+		data[0] = 0x04;			// Command ID 	
+		data[1] = (char)127.0; 		// velocity (not used)
+		data[2] = 0x7D;			// PositionH
+		data[3] = 0x00;			// PositionL
+		data[4] = 0x78;			// TimeStamp
+		int res = 0;
+		double v = 0;
+
+		for(int i=0; i<4; i++){
+			id = jointID_[i];
+
+			// set position			
+
+			//ROS_INFO("%lf", v);
+			data[1] = (char)((int)v); 
+			res = itf_.sendMsg(id, len, data);
+			ros::Duration(0.005).sleep();
+		}	
+		return res;
+	}
+
+
+	//*************************************************************************************
+	void cpr_kin_mover4::poseCallback(const geometry_msgs::Pose::ConstPtr& msg){
+		
+		double joints[4];
+		std::string s;
+		double x = msg->position.x;
+		double y = msg->position.y;
+		double z = msg->position.z;
+		//ROS_INFO("Received: %s ", s.c_str()) ;
+		//ROS_INFO("Received vx=%.3lf vy=%.3lf rz=%.3lf", x, y, a);
+
+		invKin(msg, &joints[0]);
+/*
+		if(itf_.getConnectionStatus()){			// send only, if the interface is ok
+			setJointPositions(&vel_joint[0]);
+
+			int l = 0;
+			char d[8];
+			int err = 0;
+			double curr = 0.0;		
+			for(int i=0; i<4; i++){
+				itf_.getLastMessage(jointID_[0]+1, &l, d);
+				err =  err | d[0];
+			 	curr += 25.0 + 7.8 * (double)d[4];			// Current in mA:  
+											// Always 25 mA for the electronics
+											// plus motors: scale: 1050 mA = 135 tics --> 7.8
+											// computer not included
+ 			}	
+*/			
+/*			ROS_INFO("Vel: %.3lf %.3lf %.3lf - Err: %d Curr: %.0lf mA - Pos: %.3lf %.3lf %.3lf", 
+			x, y, a, err, curr, 
+				pos_current_.position.x, 
+				pos_current_.position.y, 
+				pos_current_.orientation.z);
+			ROS_INFO("Joints: %.2lf %.2lf %.2lf %.2lf - Err: %d Curr: %.0lf mA - Pos: %.3lf %.3lf %.3lf", 
+			vel_joint[0], vel_joint[1], vel_joint[2], vel_joint[3], err, curr, 
+				pos_current_.position.x, 
+				pos_current_.position.y, 
+				pos_current_.orientation.z);
+*/				
+		}
+
+		pub_joints_mover4_.publish(pos_current_);
+				
+	}	
+
+	
+	//**************************************************************************************
+	void cpr_kin_mover4::invKin(const geometry_msgs::Pose::ConstPtr& pos_cart, double *pos_joints){
+
+				
+
+		
+
+		return;
+
+	} 
+
+	
+	
+
+
 
 
 

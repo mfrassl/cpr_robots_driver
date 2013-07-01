@@ -50,13 +50,48 @@ CMAKE_SOURCE_DIR = /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterf
 CMAKE_BINARY_DIR = /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build
 
 #=============================================================================
+# Target rules for target CMakeFiles/CPRKinMover4.dir
+
+# All Build rule for target.
+CMakeFiles/CPRKinMover4.dir/all: CMakeFiles/rosbuild_precompile.dir/all
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/depend
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/build
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles  1 2
+	@echo "Built target CPRKinMover4"
+.PHONY : CMakeFiles/CPRKinMover4.dir/all
+
+# Include target in all.
+all: CMakeFiles/CPRKinMover4.dir/all
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/CPRKinMover4.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/CPRKinMover4.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles 0
+.PHONY : CMakeFiles/CPRKinMover4.dir/rule
+
+# Convenience name for target.
+CPRKinMover4: CMakeFiles/CPRKinMover4.dir/rule
+.PHONY : CPRKinMover4
+
+# clean rule for target.
+CMakeFiles/CPRKinMover4.dir/clean:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/clean
+.PHONY : CMakeFiles/CPRKinMover4.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/CPRKinMover4.dir/clean
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/CPRKinSlider.dir
 
 # All Build rule for target.
 CMakeFiles/CPRKinSlider.dir/all: CMakeFiles/rosbuild_precompile.dir/all
 	$(MAKE) -f CMakeFiles/CPRKinSlider.dir/build.make CMakeFiles/CPRKinSlider.dir/depend
 	$(MAKE) -f CMakeFiles/CPRKinSlider.dir/build.make CMakeFiles/CPRKinSlider.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles  1 2
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles  3 4
 	@echo "Built target CPRKinSlider"
 .PHONY : CMakeFiles/CPRKinSlider.dir/all
 

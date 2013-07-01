@@ -33,7 +33,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 // Created on: 	Jan 12th, 2013
-// Last Update:	June 31st, 2013
+// Last Update:	July 1st, 2013
 
 
 
@@ -69,10 +69,10 @@ namespace cpr_robots{
 
 		// standard configuration for the slider, looking in forward-direction
 		// the front is where the CPR print is, the back is where the main switch is
-		jointIDs[0] = 8;		// front left							 
-		jointIDs[1] = 6;		// front right
-		jointIDs[2] = 2;		// back left
-		jointIDs[3] = 4;		// back right
+		jointID_[0] = 8;		// front left							 
+		jointID_[1] = 6;		// front right
+		jointID_[2] = 2;		// back left
+		jointID_[3] = 4;		// back right
 
 
 		length_ = 0.3;					// values for Slider 100 and 150
@@ -86,6 +86,8 @@ namespace cpr_robots{
 
 		double complete_rotation = width_ * 3.141;	// Rotational speed given in rad/s
 		scale_rotation_ = complete_rotation / (2.0 * 3.141) * scale_translation_;		
+		
+		acc = 0.01;					// mm/s²
 
 		flag_sending_ = false;
 	}
@@ -178,6 +180,11 @@ namespace cpr_robots{
 		char data[8];
 		data[0] = 0x01;	data[1] = 0x09;		// Code for enable motors
 		int res = 0;
+
+		cmd_twist_.linear.x = 0.0;		// reset the vel memory to avoid jump starts
+		cmd_twist_.linear.y = 0.0;
+		cmd_twist_.angular.z = 0.0;
+				
 		flag_sending_ = false;
 		for(int i=0; i<4; i++){
 			id = jointID_[i];
@@ -255,11 +262,31 @@ namespace cpr_robots{
 		double y = msg->linear.y;
 		double a = msg->angular.z;
 		//ROS_INFO("Received: %s ", s.c_str()) ;
-		//ROS_INFO("Received vx=%.3lf vy=%.3lf rz=%.3lf", x, y, a);
+		ROS_INFO("Received vx=%.3lf vy=%.3lf rz=%.3lf", x, y, a);
 
-		invKin(msg, &vel_joint[0]);
+		// limiting the acceleration on cart level to avoid ill joint motions
+		if(  fabs(x - cmd_twist_.linear.x) > acc){
+			if(x > cmd_twist_.linear.x) x = cmd_twist_.linear.x + acc;
+			else x = cmd_twist_.linear.x - acc;		
+		} 
+		if(  fabs(y - cmd_twist_.linear.y) > acc){
+			if(y > cmd_twist_.linear.y) y = cmd_twist_.linear.y + acc;
+			else y = cmd_twist_.linear.y - acc;		
+		} 
+		if(  fabs(a - cmd_twist_.angular.z) > acc){
+			if(a > cmd_twist_.angular.z) a = cmd_twist_.angular.z + acc;
+			else a = cmd_twist_.angular.z - acc;		
+		} 
+
+		// copy into own message and remember for the next time
+		cmd_twist_.linear.x = x;
+		cmd_twist_.linear.y = y;
+		cmd_twist_.angular.z = a;
+
+		invKin(cmd_twist_, &vel_joint[0]);		// compute the joint velocities based on the cart velocities
 
 		if(itf_.getConnectionStatus()){			// send only, if the interface is ok
+
 			setVelocities(&vel_joint[0]);
 
 			int l = 0;
@@ -267,11 +294,11 @@ namespace cpr_robots{
 			int err = 0;
 			double curr = 0.0;		
 			for(int i=0; i<4; i++){
-				itf_.getLastMessage(jointID_[0]+1, &l, d);
+				itf_.getLastMessage(jointID_[i]+1, &l, d);
 				err =  err | d[0];
-			 	curr += 25.0 + 7.8 * (double)d[4];			// Current in mA:  
+			 	curr += 25.0 + 15.6 * (double)d[4];			// Current in mA:  
 											// Always 25 mA for the electronics
-											// plus motors: scale: 1050 mA = 135 tics --> 7.8
+											// plus motors: current = 15.6 * d[4] 
 											// computer not included
  			}	
 			updatePosition(msg);
@@ -280,11 +307,8 @@ namespace cpr_robots{
 				pos_current_.position.x, 
 				pos_current_.position.y, 
 				pos_current_.orientation.z);
-*/			ROS_INFO("Joints: %.2lf %.2lf %.2lf %.2lf - Err: %d Curr: %.0lf mA - Pos: %.3lf %.3lf %.3lf", 
-			vel_joint[0], vel_joint[1], vel_joint[2], vel_joint[3], err, curr, 
-				pos_current_.position.x, 
-				pos_current_.position.y, 
-				pos_current_.orientation.z);
+*/			ROS_INFO("Joint Vel: %.0lf %.0lf %.0lf %.0lf - Err: %d Curr: %.0lf mA", 
+			vel_joint[0], vel_joint[1], vel_joint[2], vel_joint[3], err, curr); 
 				
 		}
 
@@ -294,27 +318,27 @@ namespace cpr_robots{
 
 	
 	//**************************************************************************************
-	void CPRKinSlider::invKin(const geometry_msgs::Twist::ConstPtr& vel_cart, double *vel_joint){
+	void CPRKinSlider::invKin(geometry_msgs::Twist vel_cart, double *vel_joint){
 
 		// the motions add up		
 
 		// forward: all four wheels 
-		vel_joint[0] =  scale_translation_ * vel_cart->linear.x;
-		vel_joint[1] = -scale_translation_ * vel_cart->linear.x;
-		vel_joint[2] =  scale_translation_ * vel_cart->linear.x;
-		vel_joint[3] = -scale_translation_ * vel_cart->linear.x;
+		vel_joint[0] =  scale_translation_ * vel_cart.linear.x;
+		vel_joint[1] = -scale_translation_ * vel_cart.linear.x;
+		vel_joint[2] =  scale_translation_ * vel_cart.linear.x;
+		vel_joint[3] = -scale_translation_ * vel_cart.linear.x;
 
 		// traverse: 
-		vel_joint[0] += scale_translation_ * vel_cart->linear.y;
-		vel_joint[1] += scale_translation_ * vel_cart->linear.y;
-		vel_joint[2] -= scale_translation_ * vel_cart->linear.y;
-		vel_joint[3] -= scale_translation_ * vel_cart->linear.y;
+		vel_joint[0] += scale_translation_ * vel_cart.linear.y;
+		vel_joint[1] += scale_translation_ * vel_cart.linear.y;
+		vel_joint[2] -= scale_translation_ * vel_cart.linear.y;
+		vel_joint[3] -= scale_translation_ * vel_cart.linear.y;
 
 		// rotate: 
-		vel_joint[0] -= scale_rotation_ * vel_cart->angular.z;
-		vel_joint[1] -= scale_rotation_ * vel_cart->angular.z;
-		vel_joint[2] -= scale_rotation_ * vel_cart->angular.z;
-		vel_joint[3] -= scale_rotation_ * vel_cart->angular.z;
+		vel_joint[0] -= scale_rotation_ * vel_cart.angular.z;
+		vel_joint[1] -= scale_rotation_ * vel_cart.angular.z;
+		vel_joint[2] -= scale_rotation_ * vel_cart.angular.z;
+		vel_joint[3] -= scale_rotation_ * vel_cart.angular.z;
 
 		return;
 

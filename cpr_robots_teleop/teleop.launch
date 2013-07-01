@@ -1,6 +1,0 @@
-<launch>
-	
-	<node name="CPRTeleopKeyboard" pkg="cpr_robots_teleop" type="CPRTeleopKeyboard" output="screen" />
-	<node name="CPRKinSlider" pkg="cpr_robots_hwinterface" type="CPRKinSlider" output="screen" />
-
-</launch>

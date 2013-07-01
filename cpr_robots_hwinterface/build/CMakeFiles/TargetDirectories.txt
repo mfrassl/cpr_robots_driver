@@ -1,3 +1,4 @@
+/home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles/CPRKinMover4.dir
 /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles/CPRKinSlider.dir
 /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles/ROSBUILD_genmsg_cpp.dir
 /home/crm/ros_workspace/cpr_robots_driver/cpr_robots_hwinterface/build/CMakeFiles/ROSBUILD_genmsg_lisp.dir

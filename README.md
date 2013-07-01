@@ -7,6 +7,7 @@ BSD license.
 
 Current Version
 -----------------
+July 1st, 2013	   - Debugging, limiting the cartesian acceleration
 June 31st, 2013    - Update, better CAN message check, aligning CAN ids, debugging 
 January 21st, 2013 - Set up
 

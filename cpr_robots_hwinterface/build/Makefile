@@ -96,6 +96,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named CPRKinMover4
+
+# Build rule for target.
+CPRKinMover4: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 CPRKinMover4
+.PHONY : CPRKinMover4
+
+# fast build rule for target.
+CPRKinMover4/fast:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/build
+.PHONY : CPRKinMover4/fast
+
+#=============================================================================
 # Target rules for targets named CPRKinSlider
 
 # Build rule for target.
@@ -305,18 +318,36 @@ tests/fast:
 
 # target to build an object file
 src/cpr_comm_rs232.o:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/src/cpr_comm_rs232.o
 	$(MAKE) -f CMakeFiles/CPRKinSlider.dir/build.make CMakeFiles/CPRKinSlider.dir/src/cpr_comm_rs232.o
 .PHONY : src/cpr_comm_rs232.o
 
 # target to preprocess a source file
 src/cpr_comm_rs232.i:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/src/cpr_comm_rs232.i
 	$(MAKE) -f CMakeFiles/CPRKinSlider.dir/build.make CMakeFiles/CPRKinSlider.dir/src/cpr_comm_rs232.i
 .PHONY : src/cpr_comm_rs232.i
 
 # target to generate assembly for a file
 src/cpr_comm_rs232.s:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/src/cpr_comm_rs232.s
 	$(MAKE) -f CMakeFiles/CPRKinSlider.dir/build.make CMakeFiles/CPRKinSlider.dir/src/cpr_comm_rs232.s
 .PHONY : src/cpr_comm_rs232.s
+
+# target to build an object file
+src/cpr_kin_mover4.o:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/src/cpr_kin_mover4.o
+.PHONY : src/cpr_kin_mover4.o
+
+# target to preprocess a source file
+src/cpr_kin_mover4.i:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/src/cpr_kin_mover4.i
+.PHONY : src/cpr_kin_mover4.i
+
+# target to generate assembly for a file
+src/cpr_kin_mover4.s:
+	$(MAKE) -f CMakeFiles/CPRKinMover4.dir/build.make CMakeFiles/CPRKinMover4.dir/src/cpr_kin_mover4.s
+.PHONY : src/cpr_kin_mover4.s
 
 # target to build an object file
 src/cpr_kin_slider.o:
@@ -339,6 +370,7 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
+	@echo "... CPRKinMover4"
 	@echo "... CPRKinSlider"
 	@echo "... ROSBUILD_genmsg_cpp"
 	@echo "... ROSBUILD_genmsg_lisp"
@@ -360,6 +392,9 @@ help:
 	@echo "... src/cpr_comm_rs232.o"
 	@echo "... src/cpr_comm_rs232.i"
 	@echo "... src/cpr_comm_rs232.s"
+	@echo "... src/cpr_kin_mover4.o"
+	@echo "... src/cpr_kin_mover4.i"
+	@echo "... src/cpr_kin_mover4.s"
 	@echo "... src/cpr_kin_slider.o"
 	@echo "... src/cpr_kin_slider.i"
 	@echo "... src/cpr_kin_slider.s"

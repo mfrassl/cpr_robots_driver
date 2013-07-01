@@ -30,7 +30,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_executable(CPRKinSlider src/cpr_kin_slider src/cpr_comm_rs232 )
-#rosbuild_add_executable(CPRKinMover4 src/cpr_kin_mover4 src/cpr_comm_rs232.cpp )
-#rosbuild_add_executable(CPRCommRS232 src/cpr_comm_rs232 )
 rosbuild_link_boost(CPRKinSlider system filesystem thread)
 
